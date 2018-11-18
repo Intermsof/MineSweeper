@@ -1,0 +1,57 @@
+#container {
+    height: auto;
+    margin: auto;
+    padding: 1px;
+}
+
+.cell{
+    width: 30px;
+    height: 30px;
+    display: inline-block;
+    border: solid 1px gray;
+}
+
+.cell-normal{
+    background: greenyellow;
+}
+
+.cell-revealed{
+    background: lightgreen;
+}
+
+.mines-contact {
+    line-height:30px;
+    font-size: large;
+    font-weight: bold;
+    text-align: center;
+}
+
+.mines-contact-1{
+    color: blue;
+}
+
+.mines-contact-2{
+    color: green;
+}
+
+.mines-contact-3{
+    color: red;
+}
+
+.mines-contact-4{
+    color:purple;
+}
+
+.mines-contact-5{
+    color:orchid;
+}
+
+.mines-contact-6{
+    color: orange;
+}
+
+
+.row{
+    height: 32px;
+    width: auto;
+}
