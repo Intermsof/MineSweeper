@@ -1,3 +1,15 @@
 # MineSweeper
 
-![alt text](result.png)
+![Minesweeper image](result.png)
+
+
+## Run
+
+npm install 
+npm start
+go to localhost:3000
+
+## Adjust field size and rate of mines
+Change line 137 : 
+
+```let mineField = new MineField(15,25,0.1);```
