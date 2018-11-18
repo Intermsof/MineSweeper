@@ -1,8 +1,4 @@
 # MineSweeper
-
-![Minesweeper image](result.png)
-
-
 ## Run
 
 * npm install 
@@ -20,3 +16,5 @@ let mineField = new MineField(15,25,0.1);
 ```
 ## Limitations
 Cannot mark mine locations.
+
+![Minesweeper image](result.png)
