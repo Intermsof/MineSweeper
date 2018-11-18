@@ -1,3 +1,3 @@
 # MineSweeper
 
-[result](MineSweeper/result.png)
+![alt text](./MineSweeper/result.png)
