@@ -18,3 +18,5 @@ let mineField = new MineField(15,25,0.1);
 //arg 2: col
 //arg 3: mine rate
 ```
+## Limitations
+Cannot mark mine locations.
