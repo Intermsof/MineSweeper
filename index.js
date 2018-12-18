@@ -1,4 +1,8 @@
-let container = document.getElementById('container');
+const canvas = document.getElementById('canvas');
+const greenOne = '#00ff00';
+const greenTwo = '#00e600';
+const dirtOne = '#ccccb3';
+const dirtTwo = '#c2c2a3';
 
 class Cell {
     constructor(isMine){
@@ -7,23 +11,56 @@ class Cell {
         this.minesContact = 0;
     }
 
-    toString(){
-        return this.isMine;
+    draw(ctx, i, j, cellSize){
+        if( (i + j) % 2 === 0){
+            ctx.fillStyle = this.revealed ? dirtOne : greenOne;
+        }
+        else{
+            ctx.fillStyle = this.revealed ? dirtTwo : greenTwo;
+        }
+
+        ctx.fillRect(j * 30, i * 30, cellSize, cellSize);
+        if(this.revealed && !this.isMine && this.minesContact !== 0){
+            switch(this.minesContact){
+                case 1 :
+                    ctx.fillStyle = 'blue';
+                    break;
+                case 2 :
+                    ctx.fillStyle = 'green';
+                    break;
+                case 3 :
+                    ctx.fillStyle = 'red';
+                    break;
+                case 4 :
+                    ctx.fillStyle = 'purple';
+                    break;
+                case 5 :
+                    ctx.fillStyle = 'crimson';
+                    break;
+                case 6 :
+                    ctx.fillStyle = 'Turquoise';
+            }
+            ctx.font = 'bold 20px serif';
+            ctx.fillText(this.minesContact.toString(),j * 30 + 10, i * 30 + 22);
+        }
     }
 }
 
 class MineField {
-    constructor(numRows, numCols, mineRate){
+    constructor(numRows, numCols, mineRate, ctx){
         this.numRows = numRows;
         this.numCols = numCols;
-        this.mineRate = mineRate
+        this.mineRate = mineRate;
+        this.ctx = ctx;
+        this.cellSize = 30;
+
         this.state = [...Array(numRows)].map(e => {
             return [...Array(numCols)].map(e => {
                 return new Cell(Math.random() < mineRate);
             });
         });
         
-
+        //loop through all cells and count the contacting number of mines
         for(let i = 0; i < this.numRows; ++i){
             for(let j = 0; j < this.numCols; ++j){
                 if(this.state[i][j].isMine){
@@ -37,101 +74,76 @@ class MineField {
                             this.state[a][b].minesContact += 1;
                         }
                     }
-
                 }
             }
         }
 
-        for(let i = 0; i < this.numRows; ++i){
-            let row = document.createElement('div');
-            row.classList.add('row');
+        canvas.setAttribute('width', this.cellSize * numCols);
+        canvas.setAttribute('height',  this.cellSize * numRows);
 
-            for(let j = 0; j < numCols; ++j){
-                let cellView = document.createElement('div');
-                cellView.classList.add('cell');
-                let cellModel = this.state[i][j];
+        this.draw();
 
-                cellView.classList.add('cell-normal');    
+        canvas.addEventListener('click', ev => {
+            const i = Math.floor((ev.y - canvas.offsetLeft) / this.cellSize);
+            const j = Math.floor((ev.x - canvas.offsetTop) / this.cellSize);
 
-                let minesContactView = document.createElement('div');
-                minesContactView.classList.add('mines-contact');
-                minesContactView.classList.add(`mines-contact-${cellModel.minesContact}`);
-                minesContactView.innerHTML = cellModel.minesContact;
-                
-                minesContactView.style.opacity = 0;
-                
-
-                cellView.appendChild(minesContactView);
-
-                cellView.addEventListener('click',(e, ev)=>{
-                    let cellModel = this.state[i][j];
-                    if(cellModel.isMine){
-                        container.innerHTML = 'YOU LOSE';
-                    }
-                    else{
-                        this.initBFS();
-                        this.BFS(i,j);
-                        this.draw();
-                    }
-                });
-
-                cellModel.view = cellView;
-                cellModel.innerNode = minesContactView;
-                row.appendChild(cellView);
+            const cell = this.state[i][j];
+            
+            if(cell.isMine){
+                this.mineClicked();
             }
-        
-            container.appendChild(row);
-        }
+            else if(!cell.revealed){
+                this.BFS(i, j);
+                this.draw();
+            }
+        });
     }
 
-    BFS(i,j){
-        console.log('bfs called ', i , j);
-        this.state[i][j].revealed = true;
-        this.searchedMap[i][j] = true;
-        if(this.state[i][j].minesContact === 0){
-            const topRow = i === 0? 0 : i - 1;
-            const leftCol = j === 0? 0 : j - 1;
-            const botRow = i === this.numRows - 1? this.numRows - 1 : i + 1;
-            const rightCol = j === this.numCols - 1? this.numCols - 1 : j + 1;
+    mineClicked(){
 
-            for(let a = topRow; a <= botRow; ++a){
-                for(let b = leftCol; b <= rightCol; ++b){
-                    if(!this.searchedMap[a][b]){
-                        this.searchedMap[a][b] = true;
-                        this.queue.push([a,b]);
+    }
+
+    BFS(i, j){
+        let queue = [[i,j]];
+        let seen = new Set();
+        seen.add(this.state[i][j]);
+
+        while(queue.length !== 0){
+            const coords = queue.pop();
+            const x = coords[0];
+            const y = coords[1];
+            const cell = this.state[x][y];
+            cell.revealed = true;
+
+            if(cell.minesContact === 0){
+                const topRow = x === 0? 0 : x - 1;
+                const leftCol = y === 0? 0 : y - 1;
+                const botRow = x === this.numRows - 1? this.numRows - 1 : x + 1;
+                const rightCol = y === this.numCols - 1? this.numCols - 1 : y + 1;
+
+                for(let a = topRow; a <= botRow; a++){
+                    for(let b = leftCol; b <= rightCol; ++b){
+                        const nextCell = this.state[a][b];
+                        if(!seen.has(nextCell)){
+                            queue.push([a,b]);
+                            seen.add(nextCell);
+                        }
                     }
                 }
             }
         }
 
-        if(this.queue.length !== 0){
-            let tuple = this.queue.shift();
-            this.BFS(tuple[0],tuple[1]);
-        }
     }
 
     draw(){
-        console.log('in draw');
         for(let i = 0; i < this.numRows; ++i){
             for(let j = 0; j < this.numCols; ++j){
-                let col = this.state[i][j];
-                if(col.revealed){
-                    col.view.classList.remove('cell-normal');
-                    col.view.classList.add('cell-revealed');
-                    if(col.minesContact !== 0){
-                        col.innerNode.style.opacity = 1;
-                    }
-                }
+                this.state[i][j].draw(this.ctx, i, j, this.cellSize);
             }
         }
     }
 
-    initBFS(){
-        this.searchedMap = [...Array(this.numRows)].map(e => {
-            return Array(this.numCols).fill(false);
-        });
-        this.queue = [];
-    }
 }
 
-let mineField = new MineField(15,25,0.1);
+const ctx = canvas.getContext('2d');
+let mineField = new MineField(20, 25, 0.1, ctx);
